@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russia Roulette</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+        }
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            width: 100%;
+            height: 100vh;
+        }
+        .button {
+            width: 50%;
+            height: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            color: white;
+            cursor: pointer;
+            border: 5px solid black; /* Viền đen dày 5px */
+            box-sizing: border-box; /* Đảm bảo viền không làm thay đổi kích thước */
+            transition: background-color 0.3s ease; /* Hiệu ứng chuyển màu mượt mà */
+        }
+        .button.disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+        .counter {
+            font-size: 18px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="button1" class="button" onclick="spin(1)">
+            Người chơi 1
+            <div id="counter1" class="counter">Số lần ấn: 0</div>
+        </div>
+        <div id="button2" class="button" onclick="spin(2)">
+            Người chơi 2
+            <div id="counter2" class="counter">Số lần ấn: 0</div>
+        </div>
+        <div id="button3" class="button" onclick="spin(3)">
+            Người chơi 3
+            <div id="counter3" class="counter">Số lần ấn: 0</div>
+        </div>
+        <div id="button4" class="button" onclick="spin(4)">
+            Người chơi 4
+            <div id="counter4" class="counter">Số lần ấn: 0</div>
+        </div>
+    </div>
+
+    <!-- Thẻ audio để phát tiếng súng -->
+    <audio id="gunshotSound" src="gunshot.mp3"></audio>
+
+    <script>
+        // Danh sách màu (5 xanh, 1 đỏ)
+        const colors = ['blue', 'blue', 'blue', 'blue', 'blue', 'red'];
+
+        // Tạo một chuỗi màu ngẫu nhiên cho mỗi người chơi
+        let players = [
+            { id: 1, sequence: generateSequence(), currentIndex: 0, isAlive: true, counter: 0 },
+            { id: 2, sequence: generateSequence(), currentIndex: 0, isAlive: true, counter: 0 },
+            { id: 3, sequence: generateSequence(), currentIndex: 0, isAlive: true, counter: 0 },
+            { id: 4, sequence: generateSequence(), currentIndex: 0, isAlive: true, counter: 0 },
+        ];
+
+        // Hàm tạo chuỗi màu ngẫu nhiên cho mỗi người chơi
+        function generateSequence() {
+            let sequence = [...colors];
+            for (let i = sequence.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [sequence[i], sequence[j]] = [sequence[j], sequence[i]];
+            }
+            return sequence;
+        }
+
+        // Hàm thay đổi màu của ô được nhấn
+        function spin(playerId) {
+            let player = players.find(p => p.id === playerId);
+            if (!player || !player.isAlive) return; // Nếu người chơi đã thua, không làm gì
+
+            // Phát tiếng súng
+            const gunshotSound = document.getElementById('gunshotSound');
+            gunshotSound.currentTime = 0; // Đặt lại thời gian phát để có thể phát lại ngay lập tức
+            gunshotSound.play();
+
+            // Cập nhật số lần ấn
+            player.counter++;
+            document.getElementById(`counter${playerId}`).textContent = `Số lần ấn: ${player.counter}`;
+
+            let color = player.sequence[player.currentIndex];
+            document.getElementById(`button${playerId}`).style.backgroundColor = color;
+
+            if (color === 'red') {
+                alert(`Người chơi ${playerId} đã thua!`);
+                player.isAlive = false;
+                document.getElementById(`button${playerId}`).classList.add('disabled');
+            }
+
+            player.currentIndex++;
+            if (player.currentIndex >= player.sequence.length) {
+                player.currentIndex = 0; // Reset nếu hết chuỗi
+            }
+        }
+    </script>
+</body>
+</html>
